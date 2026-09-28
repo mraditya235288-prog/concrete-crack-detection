@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Concrete Crack Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🏗️</div>
+        <div>
+            <strong>CONCRETE CRACK ANALYZER</strong>
+            <span>AI & Computer Vision Based Structural Crack Detection</span>
+        </div>
+    </div>
+    <nav>
+        <a class="active" href="{{ url_for('index') }}">Home</a>
+        <a href="#detection">Crack Detection</a>
+        <a href="#workflow">Analysis</a>
+        <a href="{{ url_for('about') }}">About Project</a>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="hero-copy">
+            <span class="eyebrow">COMPUTER VISION • ENGINEERING ANALYSIS</span>
+            <h1>Detect Concrete Cracks <span>in Seconds</span></h1>
+            <p>
+                Upload a concrete image or capture a real-time photograph using your
+                camera to analyze visible cracks, estimate dimensions, and classify severity.
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="#detection">📁 Upload Image</a>
+                <button class="btn btn-secondary" id="heroCameraBtn">📷 Take Photo</button>
+            </div>
+            <div class="hero-note">Works with JPG, JPEG and PNG • No separate mobile app required</div>
+        </div>
+        <div class="hero-visual">
+            <div class="scan-card">
+                <div class="scan-grid"></div>
+                <div class="crack-line"></div>
+                <div class="scan-label">LIVE ANALYSIS</div>
+                <div class="scan-status"><span></span> Computer Vision Ready</div>
+            </div>
+        </div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-wrap">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section id="detection" class="section">
+        <div class="section-heading">
+            <span class="eyebrow">IMAGE INPUT</span>
+            <h2>Choose how you want to analyze</h2>
+            <p>Use an existing image or capture a fresh photograph from your device.</p>
+        </div>
+
+        <div class="input-layout">
+            <div class="panel">
+                <div class="panel-title">
+                    <div class="panel-icon">📁</div>
+                    <div><h3>Upload Image</h3><p>JPG, JPEG or PNG</p></div>
+                </div>
+
+                <label class="dropzone" id="dropzone" for="fileInput">
+                    <div class="upload-symbol">⇧</div>
+                    <strong>Drag & Drop Image Here</strong>
+                    <span>or</span>
+                    <span class="choose-chip">Choose Image</span>
+                    <small>Maximum file size: 10 MB</small>
+                </label>
+                <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" hidden>
+
+                <div id="uploadPreview" class="preview-box hidden">
+                    <img id="uploadPreviewImage" alt="Selected concrete image">
+                    <button class="icon-btn" id="removeUpload" type="button" title="Remove image">×</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">
+                    <div class="panel-icon">📷</div>
+                    <div><h3>Camera</h3><p>Use your device camera</p></div>
+                </div>
+
+                <div class="camera-box" id="cameraBox">
+                    <video id="cameraVideo" autoplay playsinline muted></video>
+                    <canvas id="cameraCanvas" hidden></canvas>
+                    <div id="cameraPlaceholder" class="camera-placeholder">
+                        <div class="camera-icon">📷</div>
+                        <strong>Camera is ready</strong>
+                        <span>Click Start Camera to begin.</span>
+                    </div>
+                    <div id="cameraError" class="camera-error hidden"></div>
+                </div>
+
+                <div class="camera-actions">
+                    <button class="btn btn-outline" id="startCameraBtn" type="button">Start Camera</button>
+                    <button class="btn btn-primary" id="captureBtn" type="button" disabled>Capture Photo</button>
+                </div>
+
+                <div id="capturePreview" class="preview-box hidden">
+                    <img id="capturePreviewImage" alt="Captured concrete image">
+                </div>
+
+                <div class="camera-actions hidden" id="retakeActions">
+                    <button class="btn btn-outline" id="retakeBtn" type="button">Retake</button>
+                    <button class="btn btn-primary" id="usePhotoBtn" type="button">Use This Photo</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="analysisForm" class="analysis-form" action="{{ url_for('analyze') }}" method="post" enctype="multipart/form-data">
+            <input type="file" id="submitFileInput" name="image" hidden>
+            <div class="calibration settings-grid">
+                <div>
+                    <strong>Pixel Calibration</strong>
+                    <span>Default is for project/demo purposes.</span>
+                </div>
+                <label>
+                    <span>Pixels per centimeter</span>
+                    <input type="number" name="pixels_per_cm" id="pixelsPerCm" value="100" min="1" step="0.1">
+                </label>
+                <label>
+                    <span>Detection Mode</span>
+                    <select name="detection_mode" id="detectionMode">
+                        <option value="structural" selected>Structural — recommended for bridges</option>
+                        <option value="standard">Standard</option>
+                        <option value="sensitive">Sensitive — detects smaller candidates</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="analysis-actions">
+                <div class="selected-source" id="selectedSource">No image selected</div>
+                <button class="btn btn-analyze" id="analyzeBtn" type="submit" disabled>🔍 Analyze Crack</button>
+            </div>
+        </form>
+
+        <div class="structure-note">
+            <strong>🏗️ Large-structure mode:</strong>
+            Large photographs are automatically processed as overlapping high-resolution tiles.
+            Structural mode filters isolated dot-like noise while retaining elongated crack candidates.
+            This is intended for bridge, flyover, pillar, beam, tunnel and large concrete-surface images.
+        </div>
+
+        <div class="disclaimer">
+            <strong>Measurement note:</strong>
+            Actual physical crack measurements require proper camera calibration or a known
+            reference scale in the image. The default 100 pixels/cm value is intended for
+            project/demo purposes and does not replace professional structural inspection.
+        </div>
+    </section>
+
+    <section id="workflow" class="section workflow-section">
+        <div class="section-heading">
+            <span class="eyebrow">ANALYSIS PIPELINE</span>
+            <h2>From image to engineering insight</h2>
+        </div>
+        <div class="workflow">
+            <div class="flow-card"><span>01</span><strong>Image Capture</strong><p>Upload or capture a real concrete surface image.</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-card"><span>02</span><strong>OpenCV Processing</strong><p>Apply the supplied grayscale, filtering, Sobel and NMS pipeline.</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-card"><span>03</span><strong>Measurement</strong><p>Detect contours and estimate length, width and area.</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-card"><span>04</span><strong>Severity</strong><p>Classify the detected crack using the configured thresholds.</p></div>
+        </div>
+    </section>
+
+    <section class="section mini-info">
+        <div><div class="mini-number">100</div><div><strong>Default calibration</strong><span>pixels / cm</span></div></div>
+        <div><div class="mini-number">3</div><div><strong>Severity levels</strong><span>Minor • Moderate • Severe</span></div></div>
+        <div><div class="mini-number">2</div><div><strong>Input methods</strong><span>Upload • Camera</span></div></div>
+    </section>
+</main>
+
+<footer>
+    <strong>Concrete Crack Analyzer</strong>
+    <span>College Project • OpenCV Computer Vision • Flask</span>
+</footer>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loader-card">
+        <div class="spinner"></div>
+        <h3>🔍 ANALYZING CONCRETE...</h3>
+        <p id="loadingText">Detecting cracks...</p>
+        <div class="loading-steps">
+            <span>Detecting cracks...</span>
+            <span>Measuring crack dimensions...</span>
+            <span>Calculating severity...</span>
+            <span>Generating report...</span>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concrete Crack Analysis Report - {{ data.analysis_id }}</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:32px;color:#172033;background:#f5f7fb}
+.report{max-width:1000px;margin:auto;background:white;padding:36px;border-radius:18px}
+h1{margin-bottom:6px} h2{margin-top:30px;border-bottom:1px solid #ddd;padding-bottom:8px}
+.meta{color:#667085;margin-bottom:25px}.images{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+img{width:100%;border-radius:10px;border:1px solid #ddd}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{padding:18px;background:#f7f9fc;border-radius:12px}.metric b{display:block;font-size:24px;margin-top:8px}
+.severity{font-size:28px;font-weight:800}.note{margin-top:30px;padding:16px;background:#fff8e6;border-left:4px solid #e0a800}
+@media(max-width:700px){.images,.metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="report">
+<h1>CONCRETE CRACK ANALYSIS REPORT</h1>
+<div class="meta">Analysis ID: {{ data.analysis_id }} • Date: {{ data.date }}</div>
+
+<h2>Analysis Summary</h2>
+<div class="metrics">
+<div class="metric">Crack Length<b>{{ "%.2f"|format(data.length_cm) }} cm</b></div>
+<div class="metric">Crack Width<b>{{ "%.2f"|format(data.width_cm) }} cm</b></div>
+<div class="metric">Crack Area<b>{{ "%.2f"|format(data.area_cm2) }} cm²</b></div>
+<div class="metric">Severity<b>{{ data.severity }}</b></div><div class="metric">Crack Regions<b>{{ data.crack_count }}</b></div>
+</div>
+
+<h2>Images</h2>
+<div class="images">
+<div><h3>Original Image</h3><img src="{{ original_url }}" alt="Original image"></div>
+<div><h3>Detected Crack</h3><img src="{{ detected_url }}" alt="Detected crack"></div>
+</div>
+
+<h2>Classification</h2>
+<p>{{ data.severity_message }}</p>
+<p>MINOR: width &lt; 0.30 cm</p>
+<p>MODERATE: width ≥ 0.30 cm and &lt; 1.00 cm</p>
+<p>SEVERE: width ≥ 1.00 cm</p>
+
+<h2>Processing Mode</h2><p>{{ data.mode|capitalize }} mode • Large-image tiling: {{ "Yes" if data.tiled else "No" }}</p><h2>Detection Method</h2>
+<p>OpenCV Computer Vision using the supplied grayscale, Gaussian blur, background subtraction,
+Sobel X/Y, magnitude/orientation, thresholding, oriented non-maximum suppression,
+morphological closing, contour detection, measurement and severity classification pipeline.</p>
+
+<p><strong>Pixel Calibration:</strong> {{ data.pixels_per_cm }} pixels = 1 cm</p>
+
+<div class="note">
+<strong>Disclaimer:</strong> Measurements depend on image quality and calibration.
+The default 100 pixels/cm value is intended for project/research demonstration.
+This system does not certify structural safety and does not replace professional structural inspection.
+</div>
+</div>
+</body>
+</html>

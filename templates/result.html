@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analysis Result - Concrete Crack Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🏗️</div>
+        <div><strong>CONCRETE CRACK ANALYZER</strong><span>Analysis Dashboard</span></div>
+    </div>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a class="active" href="{{ url_for('index') }}#detection">Crack Detection</a>
+        <a href="{{ url_for('about') }}">About Project</a>
+    </nav>
+</header>
+
+<main class="result-main">
+    <div class="result-header">
+        <div>
+            <span class="eyebrow">ANALYSIS COMPLETE • {{ result.analysis_id }}</span>
+            <h1>Concrete Crack Analysis</h1>
+            <p>{{ result.date }} • Calibration: {{ result.pixels_per_cm }} pixels/cm • {{ result.mode|capitalize }} mode{% if result.tiled %} • Large-image tiling enabled{% endif %}</p>
+        </div>
+        <div class="result-actions">
+            <a class="btn btn-outline" href="{{ url_for('index') }}">← New Analysis</a>
+            <a class="btn btn-primary" href="{{ url_for('download_report', analysis_id=result.analysis_id) }}">⬇ Download Report</a>
+        </div>
+    </div>
+
+    <section class="metrics-grid metrics-five">
+        <div class="metric-card"><span>Crack Length</span><strong>{{ "%.2f"|format(result.length_cm) }} <small>cm</small></strong><i>↔</i></div>
+        <div class="metric-card"><span>Crack Width</span><strong>{{ "%.2f"|format(result.width_cm) }} <small>cm</small></strong><i>↕</i></div>
+        <div class="metric-card"><span>Crack Area</span><strong>{{ "%.2f"|format(result.area_cm2) }} <small>cm²</small></strong><i>▧</i></div>
+        <div class="metric-card severity-card {{ result.severity|lower|replace(' ', '-') }}">
+            <span>Severity</span><strong>{{ result.severity }}</strong><i>!</i>
+        </div>
+        <div class="metric-card">
+            <span>Crack Regions</span><strong>{{ result.crack_count }}</strong><i>⌁</i>
+        </div>
+    </section>
+
+    <section class="severity-banner {{ result.severity|lower|replace(' ', '-') }}">
+        <div class="severity-icon">{% if result.severity == "MINOR" %}✓{% elif result.severity == "MODERATE" %}⚠{% elif result.severity == "SEVERE" %}!{% else %}○{% endif %}</div>
+        <div><strong>{{ result.severity }}</strong><p>{{ result.severity_message }}</p></div>
+    </section>
+
+    <section class="comparison-section">
+        <div class="section-heading left">
+            <span class="eyebrow">VISUAL COMPARISON</span>
+            <h2>Original vs Detected Crack</h2>
+            <p>Red pixels represent the detected crack mask; blue rectangles represent detected contour bounds.</p>
+        </div>
+
+        <div class="comparison-tabs">
+            <button class="compare-tab active" data-view="side">Side-by-side</button>
+            <button class="compare-tab" data-view="original">Original</button>
+            <button class="compare-tab" data-view="detected">Detected</button>
+        </div>
+
+        <div class="comparison-grid" id="comparisonGrid">
+            <div class="image-panel" id="originalPanel">
+                <div class="image-title"><span>ORIGINAL IMAGE</span><span class="dot neutral"></span></div>
+                <div class="image-frame"><img src="{{ url_for('static_output', filename=result.original_filename) }}" alt="Original concrete image"></div>
+            </div>
+            <div class="image-panel" id="detectedPanel">
+                <div class="image-title"><span>DETECTED CRACK</span><span class="legend"><b class="red-dot"></b> Crack <b class="blue-dot"></b> Box</span></div>
+                <div class="image-frame zoom-frame"><img src="{{ url_for('static_output', filename=result.detected_filename) }}" alt="Detected concrete crack"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technical-grid">
+        <div class="info-card">
+            <span class="eyebrow">CLASSIFICATION</span>
+            <h3>Severity thresholds</h3>
+            <div class="threshold-row"><b>MINOR</b><span>Width &lt; 0.30 cm</span></div>
+            <div class="threshold-row"><b>MODERATE</b><span>0.30 cm ≤ Width &lt; 1.00 cm</span></div>
+            <div class="threshold-row"><b>SEVERE</b><span>Width ≥ 1.00 cm</span></div>
+        </div>
+        <div class="info-card">
+            <span class="eyebrow">METHOD</span>
+            <h3>OpenCV Computer Vision</h3>
+            <p>Grayscale → Gaussian blur → background subtraction → Sobel X/Y → magnitude/orientation → thresholding → oriented non-maximum suppression → morphological closing → contours → measurement → severity.</p>
+        </div>
+    </section>
+
+    <div class="structure-note">
+        <strong>🏗️ Processing:</strong>
+        {% if result.tiled %}
+        This image was larger than the processing tile size, so overlapping {{ result.tile_size }}×{{ result.tile_size }} regions with {{ result.overlap }} px overlap were analyzed and combined.
+        {% else %}
+        This image was processed directly using the supplied OpenCV pipeline.
+        {% endif %}
+        Structural mode is designed to reduce tiny isolated image-noise candidates.
+    </div>
+
+    <div class="disclaimer">
+        <strong>Important:</strong>
+        These measurements depend on image quality and the configured calibration. This
+        system is intended for college project/research purposes and does not certify
+        structural safety or replace professional structural assessment.
+    </div>
+</main>
+
+<footer>
+    <strong>Concrete Crack Analyzer</strong>
+    <span>OpenCV Computer Vision • Flask</span>
+</footer>
+
+<script>
+document.querySelectorAll(".compare-tab").forEach(button => {
+    button.addEventListener("click", () => {
+        document.querySelectorAll(".compare-tab").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+        const view = button.dataset.view;
+        const grid = document.getElementById("comparisonGrid");
+        const original = document.getElementById("originalPanel");
+        const detected = document.getElementById("detectedPanel");
+        grid.className = "comparison-grid " + view;
+        original.style.display = view === "detected" ? "none" : "";
+        detected.style.display = view === "original" ? "none" : "";
+    });
+});
+</script>
+</body>
+</html>

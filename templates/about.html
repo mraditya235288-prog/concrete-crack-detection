@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About Project - Concrete Crack Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🏗️</div>
+        <div><strong>CONCRETE CRACK ANALYZER</strong><span>Project Information</span></div>
+    </div>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('index') }}#detection">Crack Detection</a>
+        <a class="active" href="{{ url_for('about') }}">About Project</a>
+    </nav>
+</header>
+
+<main class="about-main">
+    <section class="about-hero">
+        <span class="eyebrow">COLLEGE PROJECT</span>
+        <h1>Crack Detection in Concrete Structures</h1>
+        <p>Computer vision based identification and measurement of visible concrete cracks.</p>
+    </section>
+
+    <section class="about-grid">
+        <div class="info-card large">
+            <span class="eyebrow">OBJECTIVE</span>
+            <h2>What the system does</h2>
+            <p>
+                Automatically identify visible cracks in concrete structures using the
+                provided OpenCV image-processing pipeline and provide estimated crack
+                dimensions and severity classification.
+            </p>
+        </div>
+        <div class="info-card large">
+            <span class="eyebrow">CURRENT IMPLEMENTATION</span>
+            <h2>Two real image inputs</h2>
+            <p>
+                The website accepts normal JPG/JPEG/PNG uploads and real photographs
+                captured directly from a laptop, desktop or mobile browser camera.
+                Both input methods use the same Flask → OpenCV processing function.
+            </p>
+        </div>
+    </section>
+
+    <section class="pipeline-section">
+        <div class="section-heading left">
+            <span class="eyebrow">COMPUTER VISION PIPELINE</span>
+            <h2>Current processing flow</h2>
+        </div>
+        <div class="pipeline">
+            <div>Input Image</div><span>↓</span>
+            <div>Grayscale Conversion</div><span>↓</span>
+            <div>Gaussian Blur</div><span>↓</span>
+            <div>Background Subtraction</div><span>↓</span>
+            <div>Sobel Edge Detection</div><span>↓</span>
+            <div>Magnitude & Orientation</div><span>↓</span>
+            <div>Thresholding</div><span>↓</span>
+            <div>Oriented Non-Maximum Suppression</div><span>↓</span>
+            <div>Morphological Closing</div><span>↓</span>
+            <div>Contour Detection</div><span>↓</span>
+            <div>Crack Measurement</div><span>↓</span>
+            <div>Severity Classification</div><span>↓</span>
+            <div>Result</div>
+        </div>
+    </section>
+
+    <section class="iot-section">
+        <div class="section-heading left">
+            <span class="eyebrow">FUTURE IOT INTEGRATION</span>
+            <h2>Hardware-ready architecture</h2>
+            <p>The current release does not create fake IoT readings. Hardware can be added later.</p>
+        </div>
+        <div class="iot-flow">
+            <div>📷<strong>Camera / ESP32-CAM</strong></div><span>→</span>
+            <div>📡<strong>IoT Device</strong></div><span>→</span>
+            <div>🌐<strong>Wi-Fi</strong></div><span>→</span>
+            <div>🖥️<strong>Flask Server</strong></div><span>→</span>
+            <div>🔍<strong>Crack Detection</strong></div><span>→</span>
+            <div>🗄️<strong>Database</strong></div><span>→</span>
+            <div>📊<strong>Dashboard</strong></div><span>→</span>
+            <div>🚨<strong>Alerts</strong></div>
+        </div>
+    </section>
+
+    <div class="disclaimer">
+        <strong>Measurement disclaimer:</strong>
+        The default calibration is 100 pixels/cm for demonstration. Actual physical
+        measurements require camera calibration or a known reference scale. The system
+        does not certify structural safety.
+    </div>
+</main>
+
+<footer>
+    <strong>Concrete Crack Analyzer</strong>
+    <span>College Project • OpenCV • Flask</span>
+</footer>
+</body>
+</html>
